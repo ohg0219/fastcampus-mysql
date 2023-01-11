@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class MemberTest {
+class PostTest {
 
     @Test
     @DisplayName("회원은 닉네임을 변경할 수 있다.")
