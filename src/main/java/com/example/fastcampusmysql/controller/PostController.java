@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.controller;
 
+import com.example.fastcampusmysql.application.usecase.CreatePostUseCase;
 import com.example.fastcampusmysql.application.usecase.GetTimelinePostUseCase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
@@ -25,10 +26,11 @@ public class PostController {
     private final PostReadService postReadService;
 
     private final GetTimelinePostUseCase getTimelinePostUseCase;
+    private final CreatePostUseCase createPostUseCase;
 
     @PostMapping("")
     public Long create(PostCommand command) {
-        return postWriteService.create(command);
+        return createPostUseCase.execute(command);
     }
 
 
@@ -58,7 +60,7 @@ public class PostController {
             @PathVariable Long memberId,
             CursorRequest request
     ) {
-        return getTimelinePostUseCase.execute(memberId, request);
+        return getTimelinePostUseCase.executeByTimeline(memberId, request);
     }
 
 }
