@@ -7,15 +7,16 @@ import com.example.fastcampusmysql.domain.member.repository.MemberNicknameHistor
 import com.example.fastcampusmysql.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberWriteService {
-
     private final MemberRepository memberRepository;
 
     private final MemberNicknameHistoryRepository memberNicknameHistoryRepository;
 
+    @Transactional
     public Member create(RegisterMemberCommand command) {
         /**
          * 목표 - 회원 정보(이메일, 닉네임, 생년월일)를 등록한다.
@@ -35,6 +36,7 @@ public class MemberWriteService {
         return savedMember;
     }
 
+    @Transactional
     public void changeNickname(Long memberId, String nickname) {
 
         var member = memberRepository.findById(memberId).orElseThrow();
