@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.domain.post.repository;
 
+import com.example.fastcampusmysql.domain.member.entity.Member;
 import com.example.fastcampusmysql.util.PageHelper;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class PostRepository {
             .memberId(resultSet.getLong("memberId"))
             .contents(resultSet.getString("contents"))
             .createdDate(resultSet.getObject("createdDate", LocalDate.class))
+            .likeCount(resultSet.getLong("likeCount"))
             .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
             .build();
 
@@ -50,7 +53,7 @@ public class PostRepository {
         if (post.getId() == null) {
             return insert(post);
         }
-        throw new UnsupportedOperationException("post 는 갱신을 지원하지 않습니다");
+        return update(post);
     }
 
     private Post insert(Post post) {
@@ -112,7 +115,17 @@ public class PostRepository {
         var posts = namedJdbcTemplate.query(sql, params, ROW_MAPPER);
 
         return new PageImpl<>(posts, pageable, getCount(memberId));
+    }
 
+    public Optional<Post> findById(Long postId, Boolean requiredLock) {
+        var sql = String.format("SELECT * FROM %s WHERE id = :postId ", TABLE);
+
+        if (requiredLock) {
+            sql += "FOR UPDATE";
+        }
+        var params = new MapSqlParameterSource().addValue("postId", postId);
+        var nullablePost = namedJdbcTemplate.queryForObject(sql, params, ROW_MAPPER);
+        return Optional.ofNullable(nullablePost);
     }
 
     private Long getCount(Long memberId) {
@@ -218,6 +231,21 @@ public class PostRepository {
                 .addValue("id", id);
 
         return namedJdbcTemplate.query(sql, params, ROW_MAPPER);
+    }
+
+    private Post update(Post post) {
+        var sql = String.format("""
+                UPDATE %s SET 
+                  memberId = :memberId,
+                  contents = :contents,
+                  createdDate = :createdDate,
+                  likeCount = :likeCount,
+                  createdAt = :createdAt
+                  WHERE id = :id
+                """, TABLE);
+        SqlParameterSource params = new BeanPropertySqlParameterSource(post);
+        namedJdbcTemplate.update(sql, params);
+        return post;
     }
 
 }
